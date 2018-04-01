@@ -1,8 +1,11 @@
 from django.db import models
+
+# Create your models here.
+from django.db import models
 from django.utils import timezone
 
+
 class Post(models.Model):
-    # if django2.0 then see https://docs.djangoproject.com/ja/2.0/ref/models/fields/#arguments
     author = models.ForeignKey('auth.User')
     title = models.CharField(max_length=200)
     text = models.TextField()
