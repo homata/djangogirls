@@ -1,20 +1,23 @@
-### Django Girls Tutorial Memo
+Herokuへのデプロイまで
+-----
+
+### Django Girls Tutorial
 
 動作確認環境：macOS High Sierra (10.13.3)
 
 
 #### イントロダクション
 
-仮想環境作成 (pyenv)
+仮想環境作成 (virtualenvを使う場)
+
+    $ python -m venv myvenv
+    $ source myvenv/bin/activate
+
+仮想環境作成 (pyenvを使う場合)
 
     $ pyenv install 3.6.4
     $ pyenv virtualenv 3.6.4 dgj
     $ pyenv local dgj
-
-仮想環境作成 (virtualenv)
-
-    $ python -m venv myvenv
-    $ source myvenv/bin/activate
 
 Djangoインストール
 
@@ -52,6 +55,11 @@ Django動作確認
 
 #### Deploy!
 
+* gunicorn: Python製のWSGIサーバ。
+* psycopg2: Herokuのデータベース(Postgres)への接続ドライバ
+* dj-database-url: 環境変数に接続設定を登録
+* whitenoise:  画像ファイルなど静的ファイルを配置作業
+
 requirements.txtファイルを作成
 
     $ pip install dj-database-url gunicorn whitenoise
@@ -63,9 +71,9 @@ psycopg2をrequirements.txtに追加
     dj-database-url==0.5.0
     Django==1.11
     gunicorn==19.7.1
+    psycopg2==2.7.4
     pytz==2018.3
     whitenoise==3.3.1
-    psycopg2==2.7.4
 
 Procfileを作成
 
@@ -101,6 +109,9 @@ mysite/settings.pyを変更
 
     ファイルの最期に追加
 
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
     import dj_database_url
     DATABASES['default'] = dj_database_url.config()
 
@@ -108,14 +119,32 @@ mysite/settings.pyを変更
 
     ALLOWED_HOSTS = ['*']
 
-    STATIC_ROOT = 'staticfiles'
-
     DEBUG = False
 
     try:
         from .local_settings import *
     except ImportError:
         pass
+
+mysite/wsgi.pyを変更
+
+    $ vi mysite/wsgi.py
+
+    ファイルのに追加
+    from whitenoise.django import DjangoWhiteNoise
+    application = DjangoWhiteNoise(application)
+
+    $ cat mysite/wsgi.py
+
+        import os
+
+        from django.core.wsgi import get_wsgi_application
+        from whitenoise.django import DjangoWhiteNoise
+
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
+
+        application = get_wsgi_application()
+        application = DjangoWhiteNoise(application)
 
 Herokuアカウント作成
 
@@ -139,9 +168,9 @@ Herokuログイン
 
     $ heroku login
     Enter your Heroku credentials:
-    Email: op.homata@gmail.com
+    Email: hoge@fuge.com
     Password: *********
-    Logged in as op.homata@gmail.com
+    Logged in as hoge@fuge.com
 
 .gitignoreを作成
 
@@ -170,8 +199,8 @@ Gitに登録
 
     $ git init
     Initialized empty Git repository in /djangogirls/.git/
-    $ git config user.name "Hiroshi Omata"
-    $ git config user.email op.homata@gmail.co
+    $ git config user.name "no name"
+    $ git config user.email hoge@fuga.com
 
     $ git status
         On branch master
@@ -317,8 +346,8 @@ Herokuに新しいスーパーユーザ作成
         Running python manage.py createsuperuser on ⬢ infinite-escarpment-72490... up, run.8070 (Free)
         /app/.heroku/python/lib/python3.6/site-packages/psycopg2/__init__.py:144: UserWarning: The psycopg2 wheel package will be renamed from release 2.8; in order to keep installing from binary please use "pip install psycopg2-binary" instead. For details see: <http://initd.org/psycopg/docs/install.html#binary-install-from-pypi>.
           """)
-        Username (leave blank to use 'u7244'): homata
-        Email address: op.homata@gmail.com
+        Username (leave blank to use 'u7244'): hoge
+        Email address: hoge@fuga.com
         Password:
         Password (again):
         Superuser created successfully.
