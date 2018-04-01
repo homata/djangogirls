@@ -1,0 +1,362 @@
+### Django Girls Tutorial Memo
+
+動作確認環境：macOS High Sierra (10.13.3)
+
+
+#### イントロダクション
+
+仮想環境作成 (pyenv)
+
+    $ pyenv install 3.6.4
+    $ pyenv virtualenv 3.6.4 dgj
+    $ pyenv local dgj
+
+仮想環境作成 (virtualenv)
+
+    $ python -m venv myvenv
+    $ source myvenv/bin/activate
+
+Djangoインストール
+
+    $ pip install --upgrade pip
+    $ pip install django==1.11
+    $ pip freeze
+
+プロジェクト作成
+
+    $ django-admin startproject mysite .
+
+データベース作成
+
+    $ python manage.py migrate
+
+Django動作確認
+
+    $ python manage.py runserver
+
+アプリケーション作成(blog)
+
+    $ python manage.py startapp blog
+
+データベースにモデル用のテーブルを作る
+
+    $ python manage.py makemigrations blog
+
+データベース更新
+
+    $ python manage.py migrate blog
+
+スーパーユーザ作成
+
+    $ python manage.py createsuperuser
+
+#### Deploy!
+
+requirements.txtファイルを作成
+
+    $ pip install dj-database-url gunicorn whitenoise
+    $ pip freeze > requirements.txt
+
+psycopg2をrequirements.txtに追加
+
+    $ cat requirements.txt
+    dj-database-url==0.5.0
+    Django==1.11
+    gunicorn==19.7.1
+    pytz==2018.3
+    whitenoise==3.3.1
+    psycopg2==2.7.4
+
+Procfileを作成
+
+    $ vi Procfile
+
+    web: gunicorn mysite.wsgi
+
+runtime.txt作成
+
+    $ vi runtime.txt
+
+    python-3.6.4
+
+mysite/local_settings.py作成
+
+    $ vi mysite/local_settings.py
+
+    import os
+    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
+
+    DEBUG = True
+
+mysite/settings.pyを変更
+
+    $ vi mysite/settings.py
+
+    ファイルの最期に追加
+
+    import dj_database_url
+    DATABASES['default'] = dj_database_url.config()
+
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    ALLOWED_HOSTS = ['*']
+
+    STATIC_ROOT = 'staticfiles'
+
+    DEBUG = False
+
+    try:
+        from .local_settings import *
+    except ImportError:
+        pass
+
+Herokuアカウント作成
+
+    Herokuの無料アカウントを作成
+    https://id.heroku.com/signup/www-home-top
+
+    Heroku Home
+    https://jp.heroku.com/home
+
+    heroku login
+    https://id.heroku.com/login
+
+Heroku CLIをインストール <https://toolbelt.heroku.com>
+
+    $ brew install heroku/brew/heroku
+    $ heroku update
+    $ heroku --version
+    heroku-cli/6.16.3-4239951 (darwin-x64) node-v9.9.0
+
+Herokuログイン
+
+    $ heroku login
+    Enter your Heroku credentials:
+    Email: op.homata@gmail.com
+    Password: *********
+    Logged in as op.homata@gmail.com
+
+.gitignoreを作成
+
+    $ vi .gitignore
+    myvenv
+    __pycache__
+    staticfiles
+    local_settings.py
+    db.sqlite3
+    *.py[co]
+
+Gitインストール
+
+    gitがない場合は以下のいずれかをインストール
+
+    Git --fast-version-control
+    https://git-scm.com/
+
+    Sourcetree
+    https://www.sourcetreeapp.com/
+
+    GitHub Desktop
+    https://desktop.github.com/
+
+Gitに登録
+
+    $ git init
+    Initialized empty Git repository in /djangogirls/.git/
+    $ git config user.name "Hiroshi Omata"
+    $ git config user.email op.homata@gmail.co
+
+    $ git status
+        On branch master
+
+        No commits yet
+
+        Untracked files:
+          (use "git add <file>..." to include in what will be committed)
+
+            .gitignore
+            Procfile
+            blog/
+            manage.py
+            mysite/
+            requirements.txt
+            runtime.txt
+
+        nothing added to commit but untracked files present (use "git add" to track)
+
+    $ git add -A .
+    $ git commit -m "My Django Girls app"
+         17 files changed, 382 insertions(+)
+         create mode 100644 .gitignore
+         create mode 100644 Procfile
+         create mode 100644 blog/__init__.py
+         create mode 100644 blog/admin.py
+         create mode 100644 blog/apps.py
+         create mode 100644 blog/migrations/0001_initial.py
+         create mode 100644 blog/migrations/__init__.py
+         create mode 100644 blog/models.py
+         create mode 100644 blog/tests.py
+         create mode 100644 blog/views.py
+         create mode 100755 manage.py
+         create mode 100644 mysite/__init__.py
+         create mode 100644 mysite/settings.py
+         create mode 100644 mysite/urls.py
+         create mode 100644 mysite/wsgi.py
+         create mode 100644 requirements.txt
+         create mode 100644 runtime.txt
+
+アプリケーションの名を決める
+
+    [your blog's name].herokuapp.com
+    小文字の英数字とダッシュ(-)の組み合わせ
+
+    $ heroku create [your blog's name]
+
+    [your blog's name]はHerokuで使うあなたのアプリケーション名。重複禁止
+
+    名前が自分で思いつかない時はHerokuに決めてもらう
+    $ heroku create
+
+    あとで名前を変更する場合
+    $ heroku apps:rename the-new-name
+
+    $ heroku create
+    Creating app... done, ⬢ infinite-escarpment-72490
+    https://infinite-escarpment-72490.herokuapp.com/ | https://git.heroku.com/infinite-escarpment-72490.git
+
+Herokuへデプロイ
+
+    $ git push heroku master
+        Counting objects: 29, done.
+        Delta compression using up to 8 threads.
+        Compressing objects: 100% (25/25), done.
+        Writing objects: 100% (29/29), 5.83 KiB | 2.92 MiB/s, done.
+        Total 29 (delta 5), reused 0 (delta 0)
+        remote: Compressing source files... done.
+        remote: Building source:
+        remote:
+        remote: -----> Python app detected
+        remote: -----> Installing python-3.6.4
+        remote: -----> Installing pip
+        remote: -----> Installing requirements with pip
+        remote:        Collecting dj-database-url==0.5.0 (from -r /tmp/build_6b507ad8c1740ede553b2383195af1f5/requirements.txt (line 1))
+        remote:          Downloading dj_database_url-0.5.0-py2.py3-none-any.whl
+        remote:        Collecting Django==1.11 (from -r /tmp/build_6b507ad8c1740ede553b2383195af1f5/requirements.txt (line 2))
+        remote:          Downloading Django-1.11-py2.py3-none-any.whl (6.9MB)
+        remote:        Collecting gunicorn==19.7.1 (from -r /tmp/build_6b507ad8c1740ede553b2383195af1f5/requirements.txt (line 3))
+        remote:          Downloading gunicorn-19.7.1-py2.py3-none-any.whl (111kB)
+        remote:        Collecting pytz==2018.3 (from -r /tmp/build_6b507ad8c1740ede553b2383195af1f5/requirements.txt (line 4))
+        remote:          Downloading pytz-2018.3-py2.py3-none-any.whl (509kB)
+        remote:        Collecting whitenoise==3.3.1 (from -r /tmp/build_6b507ad8c1740ede553b2383195af1f5/requirements.txt (line 5))
+        remote:          Downloading whitenoise-3.3.1-py2.py3-none-any.whl
+        remote:        Collecting psycopg2==2.7.4 (from -r /tmp/build_6b507ad8c1740ede553b2383195af1f5/requirements.txt (line 6))
+        remote:          Downloading psycopg2-2.7.4-cp36-cp36m-manylinux1_x86_64.whl (2.7MB)
+        remote:        Installing collected packages: dj-database-url, pytz, Django, gunicorn, whitenoise, psycopg2
+        remote:        Successfully installed Django-1.11 dj-database-url-0.5.0 gunicorn-19.7.1 psycopg2-2.7.4 pytz-2018.3 whitenoise-3.3.1
+        remote:
+        remote: -----> $ python manage.py collectstatic --noinput
+        remote:        61 static files copied to '/tmp/build_6b507ad8c1740ede553b2383195af1f5/staticfiles'.
+        remote:
+        remote: -----> Discovering process types
+        remote:        Procfile declares types -> web
+        remote:
+        remote: -----> Compressing...
+        remote:        Done: 51M
+        remote: -----> Launching...
+        remote:        Released v4
+        remote:        https://infinite-escarpment-72490.herokuapp.com/ deployed to Heroku
+        remote:
+        remote: Verifying deploy... done.
+        To https://git.heroku.com/infinite-escarpment-72490.git
+         * [new branch]      master -> master
+
+Herokuのウェブプロセスを起動
+
+    $ heroku ps:scale web=1
+
+        Scaling dynos... done, now running web at 1:Free
+
+ブラウザー起動
+
+    $ heroku open
+
+Herokuに新しいデータベースを作成
+
+    $ heroku run python manage.py migrate
+        Running python manage.py migrate on ⬢ infinite-escarpment-72490... up, run.7211 (Free)
+        /app/.heroku/python/lib/python3.6/site-packages/psycopg2/__init__.py:144: UserWarning: The psycopg2 wheel package will be renamed from release 2.8; in order to keep installing from binary please use "pip install psycopg2-binary" instead. For details see: <http://initd.org/psycopg/docs/install.html#binary-install-from-pypi>.
+          """)
+        Operations to perform:
+          Apply all migrations: admin, auth, blog, contenttypes, sessions
+        Running migrations:
+          Applying contenttypes.0001_initial... OK
+          Applying auth.0001_initial... OK
+          Applying admin.0001_initial... OK
+          Applying admin.0002_logentry_remove_auto_add... OK
+          Applying contenttypes.0002_remove_content_type_name... OK
+          Applying auth.0002_alter_permission_name_max_length... OK
+          Applying auth.0003_alter_user_email_max_length... OK
+          Applying auth.0004_alter_user_username_opts... OK
+          Applying auth.0005_alter_user_last_login_null... OK
+          Applying auth.0006_require_contenttypes_0002... OK
+          Applying auth.0007_alter_validators_add_error_messages... OK
+          Applying auth.0008_alter_user_username_max_length... OK
+          Applying blog.0001_initial... OK
+          Applying sessions.0001_initial... OK
+
+Herokuに新しいスーパーユーザ作成
+
+    $ heroku run python manage.py createsuperuser
+        Running python manage.py createsuperuser on ⬢ infinite-escarpment-72490... up, run.8070 (Free)
+        /app/.heroku/python/lib/python3.6/site-packages/psycopg2/__init__.py:144: UserWarning: The psycopg2 wheel package will be renamed from release 2.8; in order to keep installing from binary please use "pip install psycopg2-binary" instead. For details see: <http://initd.org/psycopg/docs/install.html#binary-install-from-pypi>.
+          """)
+        Username (leave blank to use 'u7244'): homata
+        Email address: op.homata@gmail.com
+        Password:
+        Password (again):
+        Superuser created successfully.
+
+ブラウザー起動
+
+    $ heroku open
+
+        Not Found
+
+        The requested URL / was not found on this server.
+
+    Admin viewしか作成していないのでこちらで確認する
+    https://infinite-escarpment-72490.herokuapp.com/admin/
+
+Herokuの操作
+
+    ログ監視
+    $ heroku logs --tail
+
+    SSHで接続
+    $ heroku run bash
+
+    プロセスチェック
+    $ heroku ps
+        Free dyno hours quota remaining this month: 550h 0m (100%)
+        For more information on dyno sleeping and how to upgrade, see:
+        https://devcenter.heroku.com/articles/dyno-sleeping
+
+        === web (Free): gunicorn mysite.wsgi (1)
+        web.1: up 2018/04/01 15:13:42 +0900 (~ 37m ago)
+
+    ダッシュボード
+    https://dashboard.heroku.com/apps
+
+    Herokuの環境をローカルで起動
+    $ python manage.py collectstatic
+    $ heroku local web
+
+
+
