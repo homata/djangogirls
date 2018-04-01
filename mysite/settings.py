@@ -131,7 +131,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ALLOWED_HOSTS = ['*']
 
-STATIC_ROOT = 'staticfiles'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEBUG = False
 
@@ -139,3 +139,7 @@ try:
     from .local_settings import *
 except ImportError:
     pass
+
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+# for /static/root/favicon.ico
+WHITENOISE_ROOT = os.path.join(BASE_DIR, 'staticfiles', 'root')
