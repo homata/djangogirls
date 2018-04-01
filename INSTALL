@@ -363,7 +363,7 @@ Herokuに新しいスーパーユーザ作成
     Admin viewしか作成していないのでこちらで確認する
     https://infinite-escarpment-72490.herokuapp.com/admin/
 
-Herokuの操作
+参考）その他のHerokuの操作の例
 
     ログ監視
     $ heroku logs --tail
