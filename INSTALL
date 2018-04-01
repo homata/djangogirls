@@ -358,5 +358,8 @@ Herokuの操作
     $ python manage.py collectstatic
     $ heroku local web
 
+    ブラウザーで確認
+    http://localhost:5000/
+
 
 
